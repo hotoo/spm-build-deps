@@ -3,6 +3,8 @@
 
 ----
 
+[![NPM version](https://badge.fury.io/js/spm-build-deps.png)](http://badge.fury.io/js/spm-build-deps)
+
 Build all dependencies modules for project.
 
 ## INSTALL
