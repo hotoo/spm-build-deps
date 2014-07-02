@@ -40,10 +40,12 @@ commander.on('--help', function() {
 });
 commander.parse(process.argv);
 
+var src_dir = commander.src || DEFAULT_SRC_DIR;
+var dist_dir = commander.dist || DEFAULT_DIST_DIR;
 var dependencies = [];
 
-if (!pkg.spm){
-  console.error("No spm infomation found.");
+if (!pkg || !pkg.spm){
+  console.error("No package or spm infomation found.");
   return;
 }
 
@@ -53,12 +55,29 @@ function find_deps(deps){
   for(var depsName in deps){
     if(!deps.hasOwnProperty(depsName)){continue;}
 
-    var depsVersion = pkg.spm.dependencies[depsName];
+    var depsVersion = deps[depsName];
+
+    var pkg_file = project_dir + "/" + src_dir + "/" + depsName + "/" +
+        depsVersion + "/package.json";
+
+    if(!fs.existsSync(pkg_file)){
+      continue;
+    }
+
+    var pkg = require(pkg_file);
+
+    if(!pkg || !pkg.spm){
+      continue;
+    }
 
     dependencies.push({
       name: depsName,
       version: depsVersion
     });
+
+    find_deps(pkg.spm.dependencies);
+    find_deps(pkg.spm.devDependencies);
+    find_deps(pkg.spm.engines);
 
   }
 }
@@ -98,9 +117,9 @@ for(var i=0,l=dependencies.length; i<l; i++){
   var depsName = dependencies[i].name;
   var depsVersion = dependencies[i].version;
   build(
-    project_dir + "/" + (commander.src || DEFAULT_SRC_DIR) +
+    project_dir + "/" + src_dir +
       "/" + depsName + "/" + depsVersion,
-    project_dir + "/" + (commander.dist || DEFAULT_DIST_DIR)
+    project_dir + "/" + dist_dir
   );
 }
 
