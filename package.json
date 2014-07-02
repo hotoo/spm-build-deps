@@ -10,7 +10,10 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/spmjs/spm-build-deps.git"
+    "url": "git@github.com:hotoo/spm-build-deps.git"
+  },
+  "bugs": {
+    "url": "https://github.com/hotoo/spm-build-deps/issues"
   },
   "dependencies": {
     "spmrc": "~0.1.3",
@@ -26,7 +29,7 @@
   "spm": {
     "dependencies": {
       "versioning": "1.1.0",
-      "univ": "0.4.0"
+      "univ": "0.1.4"
     }
   },
   "keywords": [ "spm", "build", "deps" ],
