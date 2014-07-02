@@ -86,6 +86,16 @@ find_deps(pkg.spm.dependencies);
 find_deps(pkg.spm.devDependencies);
 find_deps(pkg.spm.engines);
 
+var cache_deps = {};
+dependencies = dependencies.filter(function(deps){
+  var key = deps.name + "@" + deps.value;
+  if(cache_deps.hasOwnProperty(key)){
+    return false;
+  }
+  cache_deps[key] = key;
+  return true;
+});
+
 
 function build(module_dir, dist_dir){
   if(!fs.existsSync(module_dir)){
