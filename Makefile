@@ -9,7 +9,7 @@ install:
 	@npm install
 	@spm install
 
-build: clear
+build:
 	@./bin/spm-build-deps
 
 clear:

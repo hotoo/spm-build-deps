@@ -57,14 +57,19 @@ function find_deps(deps){
 
     var depsVersion = deps[depsName];
 
-    var pkg_file = project_dir + "/" + src_dir + "/" + depsName + "/" +
+    if(fs.existsSync(project_dir + "/" + dist_dir + "/" + depsName + "/" +
+        depsVersion)){
+          continue;
+    }
+
+    var sub_pkg_file = project_dir + "/" + src_dir + "/" + depsName + "/" +
         depsVersion + "/package.json";
 
-    if(!fs.existsSync(pkg_file)){
+    if(!fs.existsSync(sub_pkg_file)){
       continue;
     }
 
-    var pkg = require(pkg_file);
+    var pkg = require(sub_pkg_file);
 
     if(!pkg || !pkg.spm){
       continue;
