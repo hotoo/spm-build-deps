@@ -40,15 +40,33 @@ commander.on('--help', function() {
 });
 commander.parse(process.argv);
 
+var dependencies = [];
 
-if (!pkg.spm || !pkg.spm.dependencies){
-  console.error("No spm dependencies found.");
+if (!pkg.spm){
+  console.error("No spm infomation found.");
   return;
 }
 
-var deps = pkg.spm.dependencies;
-var depsDev = pkg.spm.devDependencies;
-var depsEngine = pkg.spm.engines;
+function find_deps(deps){
+  if(!deps){return;}
+
+  for(var depsName in deps){
+    if(!deps.hasOwnProperty(depsName)){continue;}
+
+    var depsVersion = pkg.spm.dependencies[depsName];
+
+    dependencies.push({
+      name: depsName,
+      version: depsVersion
+    });
+
+  }
+}
+
+find_deps(pkg.spm.dependencies);
+find_deps(pkg.spm.devDependencies);
+find_deps(pkg.spm.engines);
+
 
 function build(module_dir, dist_dir){
   if(!fs.existsSync(module_dir)){
@@ -75,73 +93,15 @@ function build(module_dir, dist_dir){
   })
 }
 
-for(var depsName in deps){
-  if(!deps.hasOwnProperty(depsName)){continue;}
-  var depsVersion = deps[depsName];
-  build( project_dir + "/" + (commander.src || DEFAULT_SRC_DIR) + "/" + depsName + "/" + depsVersion,
-      project_dir + "/" + (commander.dist || DEFAULT_DIST_DIR) );
-}
 
-
-return;
-
-
-
-
-
-
-
-
-var DEFAULT_LOCALE_PATH = 'locale/{locale}/LC_MESSAGES/{name}.js';
-var DEFAULT_EXT = ".js";
-
-// commander gettext
-
-
-
-var src_file = "./src/" + pkg.name + ".js";
-
-console.log();
-
-if(fs.existsSync(src_file)){
-
-  fs.readFile(src_file, {encoding:"utf-8"}, function(err, data){
-
-    var locale = xgettext(data);
-    var locale_path = commander["locale-path"] ||
-               spmrc.get('xgettext.locale_path') ||
-               DEFAULT_LOCALE_PATH;
-    var locale_names = commander.args || locale.names || [];
-
-    locale_names.forEach(function(locale_name, index){
-      var loc_path = src +
-        locale_path.replace(/\{locale(?:\:[^\}]*)?\}/g, locale_name)
-        .replace(/\{name\}/, pkg.name);
-      var loc_dir = path.dirname(loc_path);
-      var loc_filename = path.basename(loc_path, DEFAULT_EXT);
-      var loc_ext = path.extname(loc_path) || DEFAULT_EXT;
-
-      loc_path = loc_dir + "/" + loc_filename + loc_ext;
-
-      if(!fs.existsSync(loc_dir)){
-        if(!mkdirp.sync(loc_dir)){
-          console.error("mkdir -p " + loc_dir + " failed.");
-          process.exit();
-        }
-      }
-      if(!fs.writeFileSync(loc_path, locale.content)){
-        console.log("  * [" + locale_name + "]: " + loc_path);
-      }else{
-        console.error("  * [" + locale_name + "]: failed.");
-      }
-    });
-
-    console.log();
-  });
-
-}else{
-  console.error("Not found file " + src_file);
-  console.log();
+for(var i=0,l=dependencies.length; i<l; i++){
+  var depsName = dependencies[i].name;
+  var depsVersion = dependencies[i].version;
+  build(
+    project_dir + "/" + (commander.src || DEFAULT_SRC_DIR) +
+      "/" + depsName + "/" + depsVersion,
+    project_dir + "/" + (commander.dist || DEFAULT_DIST_DIR)
+  );
 }
 
 

@@ -3,5 +3,8 @@ install:
 	@npm install
 	@spm install
 
-build:
+build: clear
 	@./bin/spm-build-deps
+
+clear:
+	@rm -rf sea-dist-modules
