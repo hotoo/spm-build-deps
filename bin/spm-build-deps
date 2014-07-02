@@ -1,0 +1,148 @@
+#!/usr/bin/env node
+
+var path = require('path');
+var commander = require('commander');
+var color = require('colorful').color;
+var fs = require('fs');
+require("shelljs/global");
+//var exec = require("child_process").exec;
+
+var DEFAULT_SRC_DIR = "sea-modules";
+var DEFAULT_DIST_DIR = "sea-dist-modules";
+
+
+var project_dir = process.cwd();
+var pkg_file = project_dir + '/package.json';
+if(!fs.existsSync(pkg_file)){
+  console.error("Not found package.json");
+  return;
+}
+
+var pkg = require(pkg_file);
+var spmrc = require("spmrc");
+var mkdirp = require("mkdirp");
+
+
+commander
+  .version(pkg.version)
+  .usage('[locale]')
+  .option('-v, --verbose', 'Show more infomation.')
+  .option('-d, --dist', 'Specify build output dist directory.')
+  .option('-f, --force', 'Force to process the task.');
+
+commander.on('--help', function() {
+  console.log();
+  console.log('  Change locale directory in ~/.spm/spmrc');
+  console.log();
+  console.log(color.magenta('    [gettext]'));
+  console.log('    path = ./locale/{locale}/LC_MESSAGES.js');
+  console.log();
+});
+commander.parse(process.argv);
+
+
+if (!pkg.spm || !pkg.spm.dependencies){
+  console.error("No spm dependencies found.");
+  return;
+}
+
+var deps = pkg.spm.dependencies;
+var depsDev = pkg.spm.devDependencies;
+var depsEngine = pkg.spm.engines;
+
+function build(module_dir, dist_dir){
+  if(!fs.existsSync(module_dir)){
+    console.log(color.red("No found dir: " + module_dir));
+    return;
+  }
+
+  fs.stat(module_dir, function(err, stats){
+    if(err){
+      return console.log(color.red("Read module dir [" + module_dir + "] error: ", err));
+    }
+    if(stats.isDirectory()){
+      //console.error("Found dir: " + module_dir);
+      cd(module_dir);
+      exec("spm build -O " + dist_dir, function(error, stdout, stderr){
+
+        if(error){
+          console.log("");
+        }else{
+        }
+
+      });
+    }
+  })
+}
+
+for(var depsName in deps){
+  if(!deps.hasOwnProperty(depsName)){continue;}
+  var depsVersion = deps[depsName];
+  build( project_dir + "/" + (commander.src || DEFAULT_SRC_DIR) + "/" + depsName + "/" + depsVersion,
+      project_dir + "/" + (commander.dist || DEFAULT_DIST_DIR) );
+}
+
+
+return;
+
+
+
+
+
+
+
+
+var DEFAULT_LOCALE_PATH = 'locale/{locale}/LC_MESSAGES/{name}.js';
+var DEFAULT_EXT = ".js";
+
+// commander gettext
+
+
+
+var src_file = "./src/" + pkg.name + ".js";
+
+console.log();
+
+if(fs.existsSync(src_file)){
+
+  fs.readFile(src_file, {encoding:"utf-8"}, function(err, data){
+
+    var locale = xgettext(data);
+    var locale_path = commander["locale-path"] ||
+               spmrc.get('xgettext.locale_path') ||
+               DEFAULT_LOCALE_PATH;
+    var locale_names = commander.args || locale.names || [];
+
+    locale_names.forEach(function(locale_name, index){
+      var loc_path = src +
+        locale_path.replace(/\{locale(?:\:[^\}]*)?\}/g, locale_name)
+        .replace(/\{name\}/, pkg.name);
+      var loc_dir = path.dirname(loc_path);
+      var loc_filename = path.basename(loc_path, DEFAULT_EXT);
+      var loc_ext = path.extname(loc_path) || DEFAULT_EXT;
+
+      loc_path = loc_dir + "/" + loc_filename + loc_ext;
+
+      if(!fs.existsSync(loc_dir)){
+        if(!mkdirp.sync(loc_dir)){
+          console.error("mkdir -p " + loc_dir + " failed.");
+          process.exit();
+        }
+      }
+      if(!fs.writeFileSync(loc_path, locale.content)){
+        console.log("  * [" + locale_name + "]: " + loc_path);
+      }else{
+        console.error("  * [" + locale_name + "]: failed.");
+      }
+    });
+
+    console.log();
+  });
+
+}else{
+  console.error("Not found file " + src_file);
+  console.log();
+}
+
+
+// vim:ft=javascript

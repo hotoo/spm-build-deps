@@ -1,0 +1,4 @@
+node_modules/
+sea-modules/
+sea-dist-modules/
+.DS_Store
