@@ -10,16 +10,7 @@ require("shelljs/global");
 var DEFAULT_SRC_DIR = "sea-modules";
 var DEFAULT_DIST_DIR = "sea-dist-modules";
 
-
-var project_dir = process.cwd();
-var pkg_file = project_dir + '/package.json';
-if(!fs.existsSync(pkg_file)){
-  console.error("Not found package.json");
-  return;
-}
-
 var pkg = require("../package.json");
-var module_pkg = require(pkg_file);
 var spmrc = require("spmrc");
 var mkdirp = require("mkdirp");
 
@@ -40,6 +31,15 @@ commander.on('--help', function() {
   console.log();
 });
 commander.parse(process.argv);
+
+
+var project_dir = process.cwd();
+var pkg_file = project_dir + '/package.json';
+if(!fs.existsSync(pkg_file)){
+  console.error("Not found package.json");
+  return;
+}
+var module_pkg = require(pkg_file);
 
 var src_dir = commander.src || DEFAULT_SRC_DIR;
 var dist_dir = commander.dist || DEFAULT_DIST_DIR;
