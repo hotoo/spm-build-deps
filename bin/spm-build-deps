@@ -83,14 +83,16 @@ function find_deps(deps){
 
     find_deps(deps_module_pkg.spm.dependencies);
     find_deps(deps_module_pkg.spm.devDependencies);
-    find_deps(deps_module_pkg.spm.engines);
+    // Note: Engines build via seatools.
+    //find_deps(deps_module_pkg.spm.engines);
 
   }
 }
 
 find_deps(module_pkg.spm.dependencies);
 find_deps(module_pkg.spm.devDependencies);
-find_deps(module_pkg.spm.engines);
+// Note: Engines build via seatools.
+//find_deps(module_pkg.spm.engines);
 
 var cache_deps = {};
 dependencies = dependencies.filter(function(deps){
