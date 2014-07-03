@@ -58,9 +58,12 @@ function find_deps(deps){
 
     var depsVersion = deps[depsName];
 
-    if(fs.existsSync(project_dir + "/" + dist_dir + "/" + depsName + "/" +
-        depsVersion)){
-          continue;
+    if(!commander.force &&
+        fs.existsSync(
+          project_dir + "/" + dist_dir + "/" + depsName + "/" + depsVersion
+        )
+      ){
+        continue;
     }
 
     var sub_pkg_file = project_dir + "/" + src_dir + "/" + depsName + "/" +
@@ -116,7 +119,6 @@ function build(module_dir, dist_dir){
       return console.log(color.red("Read module dir [" + module_dir + "] error: ", err));
     }
     if(stats.isDirectory()){
-      //console.error("Found dir: " + module_dir);
       cd(module_dir);
       exec("spm build -O " + dist_dir, function(error, stdout, stderr){
 
