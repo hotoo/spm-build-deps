@@ -19,6 +19,7 @@ commander
   .version(pkg.version)
   .usage('[locale]')
   .option('-v, --verbose', 'Show more infomation.')
+  .option('-s, --src, --source', 'Specify build input source directory.')
   .option('-d, --dist', 'Specify build output dist directory.')
   .option('-f, --force', 'Force to process the task.');
 
@@ -26,8 +27,8 @@ commander.on('--help', function() {
   console.log();
   console.log('  Change locale directory in ~/.spm/spmrc');
   console.log();
-  console.log(color.magenta('    [gettext]'));
-  console.log('    path = ./locale/{locale}/LC_MESSAGES.js');
+  console.log(color.magenta('    [deps-build]'));
+  console.log('    default-destination = cmd-modules');
   console.log();
 });
 commander.parse(process.argv);
