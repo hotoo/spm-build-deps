@@ -4,16 +4,13 @@ var path = require('path');
 var commander = require('commander');
 var color = require('colorful').color;
 var fs = require('fs');
-require("shelljs/global");
-//var exec = require("child_process").exec;
+var exeq = require('exeq');
 
 var DEFAULT_SRC_DIR = "sea-modules";
-var DEFAULT_DEST_DIR = "cmd-modules";
+var DEFAULT_DEST_DIR = "dist";
 
 var pkg = require("../package.json");
 var spmrc = require("spmrc");
-var mkdirp = require("mkdirp");
-
 
 commander
   .version(pkg.version)
@@ -31,6 +28,7 @@ commander.on('--help', function() {
   console.log('    default-destination = cmd-modules');
   console.log();
 });
+
 commander.parse(process.argv);
 
 
@@ -63,8 +61,8 @@ function find_deps(deps){
         fs.existsSync(
           project_dir + "/" + dest_dir + "/" + depsName + "/" + depsVersion
         )
-      ){
-        continue;
+      ) {
+      continue;
     }
 
     var sub_pkg_file = project_dir + "/" + src_dir + "/" + depsName + "/" +
@@ -109,40 +107,32 @@ dependencies = dependencies.filter(function(deps){
 });
 
 
-function build(module_dir, dest_dir){
+function buildCommand(module_dir, dest_dir){
   if(!fs.existsSync(module_dir)){
     console.log(color.red("No found dir: " + module_dir));
     return;
   }
-
-  fs.stat(module_dir, function(err, stats){
-    if(err){
-      return console.log(color.red("Read module dir [" + module_dir + "] error: ", err));
-    }
-    if(stats.isDirectory()){
-      cd(module_dir);
-      exec("spm build -O " + dest_dir, function(error, stdout, stderr){
-
-        if(error){
-          console.log("");
-        }else{
-        }
-
-      });
-    }
-  })
+  try {
+    var stats = fs.statSync(module_dir);
+  } catch (err) {
+    console.log(color.red("Read module dir [" + module_dir + "] error: ", err));
+  }
+  if(stats.isDirectory()){
+    return ["cd " + module_dir, "spm build -O " + dest_dir];
+  }
 }
 
-
+var cmds = [];
 for(var i=0,l=dependencies.length; i<l; i++){
   var depsName = dependencies[i].name;
   var depsVersion = dependencies[i].version;
-  build(
+  cmds = cmds.concat(buildCommand(
     project_dir + "/" + src_dir +
       "/" + depsName + "/" + depsVersion,
     project_dir + "/" + dest_dir
-  );
+  ));
 }
 
-
-// vim:ft=javascript
+exeq(cmds).on('done', function(count) {
+  console.log(color.green('  ' + count + ' dependencies build finished!'));
+}).run();
