@@ -1,6 +1,6 @@
 {
   "name": "spm-build-deps",
-  "version": "0.2.4",
+  "version": "0.2.5",
   "description": "build spm modules for all deps.",
   "main": "index.js",
   "repository": {
@@ -24,11 +24,7 @@
       "univ": "0.1.4"
     }
   },
-  "keywords": [
-    "spm",
-    "build",
-    "deps"
-  ],
+  "keywords": [ "spm", "build", "deps", "dependencies" ],
   "author": "闲耘 <hotoo.cn@gmail.com>",
   "license": "MIT"
 }
