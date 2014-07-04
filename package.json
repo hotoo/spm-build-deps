@@ -3,11 +3,6 @@
   "version": "0.2.4",
   "description": "build spm modules for all deps.",
   "main": "index.js",
-  "scripts": {
-    "postinstall": "node scripts/post-install.js",
-    "uninstall": "node scripts/uninstall.js",
-    "test": "make test"
-  },
   "repository": {
     "type": "git",
     "url": "git@github.com:hotoo/spm-build-deps.git"
