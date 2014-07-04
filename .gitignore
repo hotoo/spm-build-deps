@@ -3,3 +3,4 @@ sea-modules/
 sea-dist-modules/
 .DS_Store
 npm-debug.log
+cmd-modules/

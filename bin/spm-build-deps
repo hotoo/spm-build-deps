@@ -8,7 +8,7 @@ require("shelljs/global");
 //var exec = require("child_process").exec;
 
 var DEFAULT_SRC_DIR = "sea-modules";
-var DEFAULT_DIST_DIR = "cmd-modules";
+var DEFAULT_DEST_DIR = "cmd-modules";
 
 var pkg = require("../package.json");
 var spmrc = require("spmrc");
@@ -19,8 +19,8 @@ commander
   .version(pkg.version)
   .usage('[locale]')
   .option('-v, --verbose', 'Show more infomation.')
-  .option('-s, --src, --source', 'Specify build input source directory.')
-  .option('-d, --dist', 'Specify build output dist directory.')
+  .option('-s, --src [source]', 'Specify build input source directory.')
+  .option('-d, --dest [destination]', 'Specify build output dest directory.')
   .option('-f, --force', 'Force to process the task.');
 
 commander.on('--help', function() {
@@ -42,8 +42,8 @@ if(!fs.existsSync(pkg_file)){
 }
 var module_pkg = require(pkg_file);
 
-var src_dir = commander.src || DEFAULT_SRC_DIR;
-var dist_dir = commander.dist || DEFAULT_DIST_DIR;
+var src_dir = commander.src || spmrc.get("deps.src") || DEFAULT_SRC_DIR;
+var dest_dir = commander.dest || spmrc.get("deps.dest") || DEFAULT_DEST_DIR;
 var dependencies = [];
 
 if (!module_pkg || !module_pkg.spm){
@@ -61,7 +61,7 @@ function find_deps(deps){
 
     if(!commander.force &&
         fs.existsSync(
-          project_dir + "/" + dist_dir + "/" + depsName + "/" + depsVersion
+          project_dir + "/" + dest_dir + "/" + depsName + "/" + depsVersion
         )
       ){
         continue;
@@ -109,7 +109,7 @@ dependencies = dependencies.filter(function(deps){
 });
 
 
-function build(module_dir, dist_dir){
+function build(module_dir, dest_dir){
   if(!fs.existsSync(module_dir)){
     console.log(color.red("No found dir: " + module_dir));
     return;
@@ -121,7 +121,7 @@ function build(module_dir, dist_dir){
     }
     if(stats.isDirectory()){
       cd(module_dir);
-      exec("spm build -O " + dist_dir, function(error, stdout, stderr){
+      exec("spm build -O " + dest_dir, function(error, stdout, stderr){
 
         if(error){
           console.log("");
@@ -140,7 +140,7 @@ for(var i=0,l=dependencies.length; i<l; i++){
   build(
     project_dir + "/" + src_dir +
       "/" + depsName + "/" + depsVersion,
-    project_dir + "/" + dist_dir
+    project_dir + "/" + dest_dir
   );
 }
 

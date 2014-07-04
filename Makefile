@@ -12,5 +12,16 @@ install:
 build:
 	@./bin/spm-build-deps
 
+build-f:
+	@./bin/spm-build-deps -f
+
+build-s:
+	@./bin/spm-build-deps -s sea-modules
+
+build-d:
+	@./bin/spm-build-deps -d cmd-modules
+
+build-all: build build-f build-s build-d
+
 clear:
 	@rm -rf sea-dist-modules

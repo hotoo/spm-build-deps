@@ -21,7 +21,7 @@ $ spm-build-deps
 
 ## OPTIONS
 
-* `-d` dist directory, default is `sea-dist-modules`.
+* `-d`, `--dest` dist directory, default is `cmd-modules`.
 * `-h` help.
 * `-v` verbose.
 * `-V` version infomation.
