@@ -22,7 +22,7 @@ $ spm-build-deps
 ## OPTIONS
 
 * `-s`, `--src` source directory, default is `sea-modules`.
-* `-d`, `--dest` dist directory, default is `dist`.
+* `-d`, `--dest` destination directory, default is `dist`.
 * `-h` help.
 * `-v` verbose.
 * `-V` version infomation.
