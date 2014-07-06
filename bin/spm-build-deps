@@ -117,11 +117,14 @@ function buildCommand(module_dir, dest_dir){
   }
   try {
     var stats = fs.statSync(module_dir);
+
+    if(stats.isDirectory()){
+      return ["cd " + module_dir,
+        "spm build" + (commander.verbose ? " -v" : "") + " -O " + dest_dir];
+    }
+
   } catch (err) {
     console.log(color.red("Read module dir [" + module_dir + "] error: ", err));
-  }
-  if(stats.isDirectory()){
-    return ["cd " + module_dir, "spm build -O " + dest_dir];
   }
 }
 
