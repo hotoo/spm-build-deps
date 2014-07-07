@@ -50,66 +50,59 @@ if (!module_pkg || !module_pkg.spm){
   return;
 }
 
-function find_deps(deps, dependencies){
-  if(!deps){return;}
+// @param {Object} deps, key:value pairs define in package.json
+// @param {Array} dependencies, list of collect dependencies.
+function each_deps(deps, dependencies){
+  if (!deps) {return;}
+  var version;
 
-  for(var depsName in deps){
-    if(!deps.hasOwnProperty(depsName)){continue;}
-
-    var depsVersion = deps[depsName];
+  for (var name in deps){
+    if (!deps.hasOwnProperty(name)){ continue; }
+    version = deps[name];
 
     if(!commander.force &&
         fs.existsSync(
-          project_dir + "/" + dest_dir + "/" + depsName + "/" + depsVersion
+          project_dir + "/" + dest_dir + "/" + name + "/" + version
         )
       ) {
       continue;
     }
 
-    dependencies.push({
-      name: depsName,
-      version: depsVersion
-    });
+    dependencies.push(name + "/" + version);
 
-    var sub_pkg_file = project_dir + "/" + src_dir + "/" + depsName + "/" +
-        depsVersion + "/package.json";
+    var deps_pkg_file = project_dir + "/" + src_dir + "/" +
+      name + "/" + version + "/package.json";
 
-    if(!fs.existsSync(sub_pkg_file)){
-      continue;
+    if (fs.existsSync(deps_pkg_file)){
+      find_deps(require(deps_pkg_file));
     }
-
-    var deps_module_pkg = require(sub_pkg_file);
-
-    if(!deps_module_pkg || !deps_module_pkg.spm){
-      continue;
-    }
-
-    find_deps(deps_module_pkg.spm.dependencies);
-
-    // Note: deps's devDeps need not build.
-    //find_deps(deps_module_pkg.spm.devDependencies);
-
-    // Note: #8, Engines build in dist/ directory via seatools.
-    find_deps(deps_module_pkg.spm.engines);
-
   }
 }
 
-find_deps(module_pkg.spm.dependencies, dependencies);
-find_deps(module_pkg.spm.devDependencies, dependencies);
-// Note: #8, Engines build in dist/ directory via seatools.
-find_deps(module_pkg.spm.engines, engines);
+// @param {Object} pkg, package.json
+// @param {Boolean} b_dev, find devDependencies or not.
+function find_deps(pkg, b_dev){
+  if(!pkg || !pkg.spm){return;}
 
+  each_deps(pkg.spm.dependencies, dependencies);
 
-var cache_deps = {};
-dependencies = dependencies.filter(function(deps){
-  var key = deps.name + "@" + deps.value;
-  if(cache_deps.hasOwnProperty(key)){
-    return false;
+  // Note: deps's devDeps need not build.
+  if (b_dev){
+    each_deps(pkg.spm.devDependencies, dependencies);
   }
-  cache_deps[key] = key;
-  return true;
-});
+
+  each_deps(pkg.spm.engines, engines);
+
+}
+
+find_deps(module_pkg, true);
+
+
+function uniq(item, index, self){
+  return self.indexOf(item) === index;
+}
+dependencies = dependencies.filter(uniq);
+engines = engines.filter(uniq);
 
 
 function buildCommand(module_dir, dest_dir){
@@ -130,26 +123,31 @@ function buildCommand(module_dir, dest_dir){
   }
 }
 
-var cmds = [];
-for(var i=0,l=dependencies.length; i<l; i++){
-  var depsName = dependencies[i].name;
-  var depsVersion = dependencies[i].version;
-  cmds = cmds.concat(buildCommand(
-    project_dir + "/" + src_dir +
-      "/" + depsName + "/" + depsVersion,
-    project_dir + "/" + dest_dir
-  ));
-}
 
-for(var i=0,l=engines.length; i<l; i++){
-  var depsName = engines[i].name;
-  var depsVersion = engines[i].version;
+var cmds = [];
+
+dependencies.forEach(function(deps){
+
+  cmds = cmds.concat(
+    buildCommand(
+      project_dir + "/" + src_dir + "/" + deps,
+      project_dir + "/" + dest_dir
+    )
+  );
+
+});
+
+engines.forEach(function(deps){
+
   cmds.push("mkdir -p " +
-      project_dir+"/"+dest_dir + "/" + depsName + "/" + depsVersion + "/");
+      project_dir+"/"+dest_dir + "/" + deps + "/");
+
   cmds.push("cp -r " +
-      project_dir + "/" + src_dir + "/" + depsName + "/" + depsVersion + "/dist/ " +
-      project_dir+"/"+dest_dir + "/" + depsName + "/" + depsVersion + "/");
-}
+      project_dir + "/" + src_dir + "/" + deps + "/dist/ " +
+      project_dir+"/"+dest_dir + "/" + deps + "/");
+
+});
+
 
 exeq(cmds).on('done', function(count) {
   console.log(color.green('  ' + (count / 2) + ' dependencies build finished!'));
