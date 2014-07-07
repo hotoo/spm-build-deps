@@ -1,6 +1,6 @@
 {
   "name": "spm-build-deps",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "description": "build spm modules for all deps.",
   "main": "index.js",
   "repository": {
