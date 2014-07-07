@@ -11,6 +11,7 @@
     "url": "https://github.com/hotoo/spm-build-deps/issues"
   },
   "dependencies": {
+    "spmrc": "1.0.0",
     "colorful": "~2.1.0",
     "commander": "~2.0.0",
     "exeq": "^0.4.0"

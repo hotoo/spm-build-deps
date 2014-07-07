@@ -26,7 +26,7 @@ build-f:
 build-v:
 	@./bin/spm-build-deps -v
 
-build-all: build build-s build-d build-f build-v
+build-all: clear build build-s build-d build-f build-v
 
 clear:
 	@rm -rf $(destination) dist/
