@@ -43,13 +43,14 @@ var module_pkg = require(pkg_file);
 var src_dir = commander.src || spmrc.get("deps.src") || DEFAULT_SRC_DIR;
 var dest_dir = commander.dest || spmrc.get("deps.dest") || DEFAULT_DEST_DIR;
 var dependencies = [];
+var engines = [];
 
 if (!module_pkg || !module_pkg.spm){
   console.error("No package or spm infomation found.");
   return;
 }
 
-function find_deps(deps){
+function find_deps(deps, dependencies){
   if(!deps){return;}
 
   for(var depsName in deps){
@@ -65,6 +66,11 @@ function find_deps(deps){
       continue;
     }
 
+    dependencies.push({
+      name: depsName,
+      version: depsVersion
+    });
+
     var sub_pkg_file = project_dir + "/" + src_dir + "/" + depsName + "/" +
         depsVersion + "/package.json";
 
@@ -78,26 +84,22 @@ function find_deps(deps){
       continue;
     }
 
-    dependencies.push({
-      name: depsName,
-      version: depsVersion
-    });
-
     find_deps(deps_module_pkg.spm.dependencies);
 
     // Note: deps's devDeps need not build.
     //find_deps(deps_module_pkg.spm.devDependencies);
 
-    // Note: Engines build via seatools.
-    //find_deps(deps_module_pkg.spm.engines);
+    // Note: #8, Engines build in dist/ directory via seatools.
+    find_deps(deps_module_pkg.spm.engines);
 
   }
 }
 
-find_deps(module_pkg.spm.dependencies);
-find_deps(module_pkg.spm.devDependencies);
-// Note: Engines build via seatools.
-//find_deps(module_pkg.spm.engines);
+find_deps(module_pkg.spm.dependencies, dependencies);
+find_deps(module_pkg.spm.devDependencies, dependencies);
+// Note: #8, Engines build in dist/ directory via seatools.
+find_deps(module_pkg.spm.engines, engines);
+
 
 var cache_deps = {};
 dependencies = dependencies.filter(function(deps){
@@ -139,6 +141,16 @@ for(var i=0,l=dependencies.length; i<l; i++){
   ));
 }
 
+for(var i=0,l=engines.length; i<l; i++){
+  var depsName = engines[i].name;
+  var depsVersion = engines[i].version;
+  cmds.push("mkdir -p " +
+      project_dir+"/"+dest_dir + "/" + depsName + "/" + depsVersion + "/");
+  cmds.push("cp -r " +
+      project_dir + "/" + src_dir + "/" + depsName + "/" + depsVersion + "/dist/ " +
+      project_dir+"/"+dest_dir + "/" + depsName + "/" + depsVersion + "/");
+}
+
 exeq(cmds).on('done', function(count) {
-  console.log(color.green('  ' + count + ' dependencies build finished!'));
+  console.log(color.green('  ' + (count / 2) + ' dependencies build finished!'));
 }).run();
