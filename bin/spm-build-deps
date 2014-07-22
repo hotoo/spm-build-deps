@@ -149,6 +149,13 @@ engines.forEach(function(deps){
 });
 
 
-exeq(cmds).on('done', function(count) {
-  console.log(color.green('  ' + (count / 2) + ' dependencies build finished!'));
+var builded = 0;
+exeq(cmds).on('each', function(command){
+  if (command.indexOf("spm build ") === 0 ||
+      command.indexOf("cp -r") === 0 ) {
+
+    builded++;
+  }
+}).on('done', function(count) {
+  console.log(color.green('  ' + builded + ' dependencies build finished!'));
 });
