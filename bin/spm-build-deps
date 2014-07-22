@@ -151,4 +151,4 @@ engines.forEach(function(deps){
 
 exeq(cmds).on('done', function(count) {
   console.log(color.green('  ' + (count / 2) + ' dependencies build finished!'));
-}).run();
+});
